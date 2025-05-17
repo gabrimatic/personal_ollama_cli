@@ -143,7 +143,7 @@ _ai_ollama_query_and_context() {
   # 4. Make API Call and Process Stream
   local new_context_to_save="" had_api_error=false response_received=false line
   # Use curl: --fail for HTTP errors, --no-progress-meter for cleaner output, -N for no buffering
-  if ! curl --fail --no-progress-meter -N -X POST "$api_url" -H "Content-Type: application/json" -d "$data_payload" \
+  if ! curl --fail --no-progress-meter -N --connect-timeout 5 --max-time 120 -X POST "$api_url" -H "Content-Type: application/json" -d "$data_payload" \
        | while IFS= read -r line; do # Process output line by line
            if [[ -z "$line" ]]; then continue; fi # Skip empty lines
 
@@ -204,7 +204,6 @@ _ai_ollama_query_and_context() {
           # Basic sanity check for removal count
           if [[ "$tokens_to_remove" -lt 1 ]]; then tokens_to_remove=1; fi
 
-          echo "[Info] Pruning context: $context_len -> $max_tokens tokens." >&2
           # Use jq array slicing: .[start:] keeps elements from 'start' index onwards
           final_context=$(jq --argjson idx "$tokens_to_remove" '.[$idx:]' <<< "$new_context_to_save")
           if [[ $? -ne 0 ]]; then
