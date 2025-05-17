@@ -1,0 +1,32 @@
+TODO for personal_ollama_cli:
+
+1.  **CRITICAL CONFIGURATION MISMATCH:** The `ai` command is currently using settings from `~/.config/ollama/ai_settings.conf` (and likely other files like `ai_system_prompt.txt`, `ai_persistent_notes.txt`) that do not match the versions in the `personal_ollama_cli` project's source. Specifically, `AI_OLLAMA_MODEL` is `gemma3:4b-it-qat` in the live config, but `gemma3:12b-it-qat` in this project's `src`. 
+    *   **Action:** To test *this* project accurately, re-run `./install.sh` from the `personal_ollama_cli` directory. This will update the system-wide configuration files to match this project's versions. After running the installer, restart your shell or source `~/.zshrc`.
+
+2.  **RESET FUNCTIONALITY:**
+    *   `ai --reset` does not appear to reset the context. The output was 'Reset initiated.' followed by a pruning message, and `ai --info context` still shows a large context. 
+        *   **Expected behavior:** Removal of the context file (`~/.cache/ollama_ai_context.json`) and a message like '[Info] Conversation context reset.' The context size should then be 0 or very small.
+    *   `ai -r "prompt"` also does not appear to correctly reset the context *before* sending the prompt. Context remains large after the command.
+        *   **Expected behavior:** Context should be cleared, then the new prompt and its response should form a small, new context.
+    *   **Investigation needed:** Review the argument parsing and conditional logic for `-r` and `--reset` in `ollama_ai.zsh` to ensure the `rm -f "$_AI_CONTEXT_FILE"` command is executed correctly and that the script exits or proceeds appropriately without making an unnecessary Ollama call when only `--reset` is used.
+
+3.  **INVALID OPTION HANDLING:**
+    *   `ai --invalid-option` does not produce the expected error message and help text. Instead, it prints 'Acknowledged. Invalid option detected. Please provide a valid prompt.' and seems to proceed with an Ollama call (indicated by the pruning message).
+        *   **Expected behavior:** An error message like 'Error: Unknown option: --invalid-option', followed by the help text, and an exit code of 1, without attempting an Ollama call.
+    *   **Investigation needed:** Check the `*)` case in the argument parsing loop in `_ai_main` function in `ollama_ai.zsh`.
+
+4.  **MANUAL TEST REQUIRED for Multi-line Input:**
+    *   Could not directly test the multi-line input feature (`ai """..."""`) via the automated `run_terminal_cmd` tool due to limitations with newline characters in commands and inability to simulate interactive input. 
+    *   **Action:** User should test this manually: Type `ai """`, press Enter, type several lines of text, press Enter after each, and finally type `"""` on a new line by itself and press Enter. Verify the entire multi-line input is sent as the prompt.
+
+5.  **MANUAL TEST REQUIRED for Edit Commands:**
+    *   The edit commands (`ai --edit-settings`, `ai --edit-notes`, `ai --edit-system`) initiate an editor, which cannot be fully verified in this non-interactive test environment.
+    *   **Action:** User should manually run these three commands. Verify that each command attempts to open the correct corresponding file in the system's default text editor (or the editor specified in the `$EDITOR` environment variable).
+        *   `ai --edit-settings` -> `~/.config/ollama/ai_settings.conf`
+        *   `ai --edit-notes`    -> `~/.config/ollama/ai_persistent_notes.txt`
+        *   `ai --edit-system`   -> `~/.config/ollama/ai_system_prompt.txt`
+
+**General Test Notes:**
+*   Pruning mechanism appears to be working correctly when context exceeds the maximum token limit.
+*   Basic prompting, viewing settings/notes/system prompt (though showing older versions due to Item 1), and context info display are functional at a basic level.
+*   Calling `ai` with no prompt correctly shows an error. 
