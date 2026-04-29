@@ -1,110 +1,107 @@
 # Personal Ollama Terminal AI
 
-A Zsh-based CLI tool providing direct terminal access to local Ollama models with context management, session persistence, and customizable system behavior.
+A Zsh-based CLI for talking to local Ollama models from the terminal. Includes context management, persistent sessions, and configurable system behavior.
 
-## ✨ Features
+## Features
 
-*   🗣️ **Streaming Output**: Continuous token-by-token response display from your local Ollama models.
-*   🧠 **Global Session Management**: Maintains a single conversation context across all terminal instances, with automatic token limit handling regardless of which terminal window you use.
-*   📝 **Global Persistent Memory**: System-wide notes file (`~/.config/ollama/ai_persistent_notes.txt`) accessible to the model across all sessions.
-*   🤖 **Customizable System Prompt**: Define model behavior and parameters via `~/.config/ollama/ai_system_prompt.txt`.
-*   ⚙️ **Configurable Settings**: Set Ollama model, API endpoint, and context limits in `~/.config/ollama/ai_settings.conf`.
-*   ✍️ **Multi-line Input**: Support for complex multi-line queries.
-*   🛠️ **Session Management**:
-    *   Edit notes, system prompts, and settings with `ai` subcommands (e.g., `ai --edit-notes`).
-    *   Reset context (`ai --reset`).
-    *   View context info (`ai --info context`).
-*   🚀 **Simple Installation**: Automated setup via installer script.
+- **Streaming output**: token-by-token responses from local Ollama models.
+- **Global session management**: one shared conversation context across all terminal instances, with automatic token-limit handling.
+- **Global persistent memory**: a system-wide notes file (`~/.config/ollama/ai_persistent_notes.txt`) the model can read across sessions.
+- **Customizable system prompt**: edit the model's behavior and parameters in `~/.config/ollama/ai_system_prompt.txt`.
+- **Configurable settings**: model, API endpoint, and context limits in `~/.config/ollama/ai_settings.conf`.
+- **Multi-line input** for longer prompts.
+- **Session controls**:
+    - Edit notes, system prompt, and settings via `ai` subcommands (e.g. `ai --edit-notes`).
+    - Reset context with `ai --reset`.
+    - Inspect context state with `ai --info context`.
+- **Installer script** for first-time setup.
 
-## ✅ Prerequisites
+## Prerequisites
 
-Make sure you have these installed:
+1. **Ollama** running with at least one model pulled (e.g. `ollama pull gemma3:4b-it-qat`). See [ollama.com](https://ollama.com).
+2. **`jq`**: JSON processor (`brew install jq` or `apt-get install jq`).
+3. **`curl`**: usually pre-installed.
+4. **`zsh`**: the Z shell.
 
-1.  **Ollama**: Running with a model pulled (e.g., `ollama pull gemma3:4b-it-qat`). See [ollama.com](https://ollama.com).
-2.  **`jq`**: JSON processor (e.g., `brew install jq` or `apt-get install jq`).
-3.  **`curl`**: Data transfer tool (usually pre-installed).
-4.  **`zsh`**: The Z shell.
+## Installation
 
-## 🛠️ Installation
+1. **Clone or download**:
 
-1.  **Clone or Download**:
     ```bash
-    # If you have git
-    git clone <your_repository_url> # Replace <your_repository_url> with the actual URL
+    git clone <your_repository_url>
     cd personal_ollama_cli
-    # If downloaded, navigate to the personal_ollama_cli directory
     ```
 
-2.  **Run the Installer**:
-    From the `personal_ollama_cli` directory:
+2. **Run the installer**:
+
     ```bash
     ./install.sh
     ```
-    The installer will:
-    *   Create config and cache directories (`~/.config/ollama`, `~/.config/zsh`, `~/.cache`).
-    *   Copy `ollama_ai.zsh` and default configs.
-    *   Add a source line to `~/.zshrc`.
 
-3.  **Apply Changes**:
-    Open a new terminal or run:
+    The installer will:
+    - Create config and cache directories (`~/.config/ollama`, `~/.config/zsh`, `~/.cache`).
+    - Copy `ollama_ai.zsh` and default configs into place.
+    - Add a source line to `~/.zshrc`.
+
+3. **Reload your shell**:
+
     ```bash
     source ~/.zshrc
     ```
 
-## 🚀 How to Use
+## Usage
 
-Interact with your Ollama model using the `ai` command:
+Talk to the model with `ai`:
 
-**Basic Prompt**:
+**Basic prompt**:
 ```bash
 ai Tell me a joke
 ```
 
-**Multi-line Input**:
-(End with `"""` on a new line)
+**Multi-line input** (end with `"""` on its own line):
 ```bash
 ai """
-What are the best practices
-for writing a good README file?
+What are good practices
+for writing a README?
 """
 ```
 
-### ⚙️ Management Commands
+### Management commands
 
-*   **Settings**:
-    *   `ai --show-settings`: View current settings.
-    *   `ai --edit-settings`: Open settings file in your editor.
+- **Settings**:
+    - `ai --show-settings`: view current settings.
+    - `ai --edit-settings`: open settings in your editor.
 
-*   **Persistent Notes**:
-    *   `ai --view-notes`: Show your persistent notes.
-    *   `ai --edit-notes`: Edit your notes. *Psst! Customize this with your info!*
+- **Persistent notes**:
+    - `ai --view-notes`: show notes.
+    - `ai --edit-notes`: edit notes.
 
-*   **System Prompt**:
-    *   `ai --view-system`: Display the system prompt.
-    *   `ai --edit-system`: Customize the AI's base instructions.
+- **System prompt**:
+    - `ai --view-system`: display the system prompt.
+    - `ai --edit-system`: edit the system prompt.
 
-*   **Conversation Context**:
-    *   `ai --info context`: Show context token count and limit.
-    *   `ai --reset`: Clear conversation context.
-    *   `ai -r "New prompt"`: Reset context and send a new prompt.
+- **Conversation context**:
+    - `ai --info context`: show context token count and limit.
+    - `ai --reset`: clear context.
+    - `ai -r "New prompt"`: reset context, then send a new prompt.
 
-*   **Temporary Overrides**:
-    *   `ai -m <model_name> "Your prompt"`: Use a different model for this query (e.g., `ai -m gemma3:12b-it-qat "Hi"`).
-    *   `ai -s "New system prompt" "Your prompt"`: Use a different system prompt (resets context).
+- **Temporary overrides**:
+    - `ai -m <model_name> "Your prompt"`: use a different model for this query.
+    - `ai -s "New system prompt" "Your prompt"`: use a different system prompt (resets context).
 
-*   **Help**:
-    *   `ai --help` or `ai -h`: Show all commands and options.
+- **Help**:
+    - `ai --help` or `ai -h`: list all commands and options.
 
-## 🎨 Customization
+## Customization
 
-*   **`~/.config/ollama/ai_settings.conf`**: Change default model (`AI_OLLAMA_MODEL`), API URL (`AI_OLLAMA_API_URL`), max context tokens (`AI_MAX_CONTEXT_TOKENS`).
-*   **`~/.config/ollama/ai_persistent_notes.txt`**: Global information store for the AI across all sessions.
-*   **`~/.config/ollama/ai_system_prompt.txt`**: Define the AI's personality and default instructions.
+- **`~/.config/ollama/ai_settings.conf`**: default model (`AI_OLLAMA_MODEL`), API URL (`AI_OLLAMA_API_URL`), max context tokens (`AI_MAX_CONTEXT_TOKENS`).
+- **`~/.config/ollama/ai_persistent_notes.txt`**: shared note store the model can read across sessions.
+- **`~/.config/ollama/ai_system_prompt.txt`**: system prompt and default behavior.
 
-## 🗑️ Uninstalling
+## Uninstall
 
-1.  Remove files from `~/.config/ollama/`, `~/.config/zsh/ollama_ai.zsh`, and `~/.cache/ollama_ai_context.json`.
-2.  Remove the sourcing line from `~/.zshrc`.
+1. Remove files from `~/.config/ollama/`, `~/.config/zsh/ollama_ai.zsh`, and `~/.cache/ollama_ai_context.json`.
+2. Remove the source line from `~/.zshrc`.
 
 ## Developer
 By [Soroush Yousefpour](https://gabrimatic.info "Soroush Yousefpour")
