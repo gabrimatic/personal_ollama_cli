@@ -1,112 +1,145 @@
-# Personal Ollama Terminal AI
+# personal_ollama_cli
 
-A Zsh-based CLI for talking to local Ollama models from the terminal. Includes context management, persistent sessions, and configurable system behavior.
+[![License: MIT](https://img.shields.io/badge/license-MIT-lightgrey.svg)](LICENSE)
+[![Shell: zsh](https://img.shields.io/badge/shell-zsh-blue.svg)]()
+[![Runtime: Ollama](https://img.shields.io/badge/runtime-Ollama-green.svg)](https://ollama.com)
+[![Local-first](https://img.shields.io/badge/local--first-terminal-green.svg)]()
+
+`personal_ollama_cli` is a small zsh command for talking to local Ollama models from the terminal. It gives you one `ai` command with streaming replies, saved chat context, persistent notes, a configurable system prompt, and simple local management commands.
+
+The runtime path stays local: the CLI sends requests to your Ollama server, stores context in your cache directory, and keeps notes and prompts in your config directory. No account. No hosted API. No telemetry.
+
+## At a Glance
+
+| Surface | Runtime scope | Status |
+|---------|---------------|--------|
+| Terminal chat | `ai "prompt"` streams from the local Ollama chat API. | Ready |
+| Conversation memory | Saves user and assistant messages in `~/.cache/ollama_ai_context.json`. | Ready |
+| Persistent notes | Adds stable local notes from `~/.config/ollama/ai_persistent_notes.txt` to each request. | Ready |
+| System prompt | Reads default behavior from `~/.config/ollama/ai_system_prompt.txt`. | Ready |
+| Local management | Reset context, inspect settings, list models, and run a local doctor check. | Ready |
+
+## Quick Start
+
+Requirements: **zsh**, **curl**, **jq**, and [Ollama](https://ollama.com) with a model pulled.
+
+```bash
+git clone https://github.com/gabrimatic/personal_ollama_cli.git
+cd personal_ollama_cli
+./install.sh
+```
+
+Open a new terminal, or source the installed file:
+
+```bash
+source ~/.config/zsh/ollama_ai.zsh
+```
+
+Check the setup:
+
+```bash
+ai --doctor
+ai --models
+```
+
+Then chat:
+
+```bash
+ai "say hello in one short sentence"
+```
 
 ## Features
 
-- **Streaming output**: token-by-token responses from local Ollama models.
-- **Global session management**: one shared conversation context across all terminal instances, with automatic token-limit handling.
-- **Global persistent memory**: a system-wide notes file (`~/.config/ollama/ai_persistent_notes.txt`) the model can read across sessions.
-- **Customizable system prompt**: edit the model's behavior and parameters in `~/.config/ollama/ai_system_prompt.txt`.
-- **Configurable settings**: model, API endpoint, and context limits in `~/.config/ollama/ai_settings.conf`.
-- **Multi-line input** for longer prompts.
-- **Session controls**:
-    - Edit notes, system prompt, and settings via `ai` subcommands (e.g. `ai --edit-notes`).
-    - Reset context with `ai --reset`.
-    - Inspect context state with `ai --info context`.
-- **Installer script** for first-time setup.
+- **Streaming terminal output** from Ollama's `/api/chat` endpoint.
+- **Real chat history** stored as message objects instead of deprecated generate-context token arrays.
+- **Context reset** with `ai --reset` or per-request reset with `ai -r "prompt"`.
+- **One-off model selection** with `ai -m qwen3:4b "prompt"`.
+- **One-off system prompt** with `ai -s "answer as a terse shell helper" "prompt"`.
+- **Multi-line prompts** with `ai """`, then end input with `"""` on its own line.
+- **Persistent notes** for stable local preferences and context.
+- **Doctor check** for dependencies and Ollama reachability.
+- **Safer installer** that keeps existing config by default and only overwrites with `--force`.
 
-## Prerequisites
+## Commands
 
-1. **Ollama** running with at least one model pulled (e.g. `ollama pull gemma3:4b-it-qat`). See [ollama.com](https://ollama.com).
-2. **`jq`**: JSON processor (`brew install jq` or `apt-get install jq`).
-3. **`curl`**: usually pre-installed.
-4. **`zsh`**: the Z shell.
+| Command | Action |
+|---------|--------|
+| `ai "prompt"` | Send a prompt using the configured model. |
+| `ai -r "prompt"` | Clear saved context, then send a prompt. |
+| `ai --reset` | Clear saved context and exit. |
+| `ai --info context` | Show saved context size and path. |
+| `ai --models` | List local Ollama models. |
+| `ai --doctor` | Check dependencies and Ollama reachability. |
+| `ai --show-settings` | Show effective settings and file paths. |
+| `ai --view-notes` / `ai --edit-notes` | Read or edit persistent notes. |
+| `ai --view-system` / `ai --edit-system` | Read or edit the system prompt. |
+| `ai --edit-settings` | Edit the settings file. |
 
-## Installation
+## Configuration
 
-1. **Clone or download**:
+Default files:
 
-    ```bash
-    git clone <your_repository_url>
-    cd personal_ollama_cli
-    ```
+| File | Purpose |
+|------|---------|
+| `~/.config/ollama/ai_settings.conf` | Model, API URL, context message limit, and optional Ollama runtime settings. |
+| `~/.config/ollama/ai_system_prompt.txt` | Default system prompt. |
+| `~/.config/ollama/ai_persistent_notes.txt` | Stable local notes injected into requests. |
+| `~/.cache/ollama_ai_context.json` | Saved chat history. |
 
-2. **Run the installer**:
+Default settings:
 
-    ```bash
-    ./install.sh
-    ```
-
-    The installer will:
-    - Create config and cache directories (`~/.config/ollama`, `~/.config/zsh`, `~/.cache`).
-    - Copy `ollama_ai.zsh` and default configs into place.
-    - Add a source line to `~/.zshrc`.
-
-3. **Reload your shell**:
-
-    ```bash
-    source ~/.zshrc
-    ```
-
-## Usage
-
-Talk to the model with `ai`:
-
-**Basic prompt**:
-```bash
-ai Tell me a joke
+```conf
+AI_OLLAMA_MODEL=gemma3:4b
+AI_OLLAMA_API_URL=http://localhost:11434/api/chat
+AI_MAX_CONTEXT_MESSAGES=24
+AI_KEEP_ALIVE=5m
+# AI_THINK=false
+# AI_NUM_CTX=8192
 ```
 
-**Multi-line input** (end with `"""` on its own line):
+The CLI accepts old `.../api/generate` values and normalizes them to `.../api/chat` at runtime.
+
+## Installer
+
+The installer updates the zsh command and creates missing config files. It does not overwrite existing settings, notes, or prompts unless you pass `--force`.
+
 ```bash
-ai """
-What are good practices
-for writing a README?
-"""
+./install.sh --dry-run
+./install.sh --yes
+./install.sh --yes --force
+./install.sh --yes --no-shell
 ```
 
-### Management commands
+With `--force`, existing config templates are copied to timestamped `.bak.*` files before replacement.
 
-- **Settings**:
-    - `ai --show-settings`: view current settings.
-    - `ai --edit-settings`: open settings in your editor.
+## Development
 
-- **Persistent notes**:
-    - `ai --view-notes`: show notes.
-    - `ai --edit-notes`: edit notes.
+Run the local checks:
 
-- **System prompt**:
-    - `ai --view-system`: display the system prompt.
-    - `ai --edit-system`: edit the system prompt.
+```bash
+zsh scripts/test.sh
+```
 
-- **Conversation context**:
-    - `ai --info context`: show context token count and limit.
-    - `ai --reset`: clear context.
-    - `ai -r "New prompt"`: reset context, then send a new prompt.
-
-- **Temporary overrides**:
-    - `ai -m <model_name> "Your prompt"`: use a different model for this query.
-    - `ai -s "New system prompt" "Your prompt"`: use a different system prompt (resets context).
-
-- **Help**:
-    - `ai --help` or `ai -h`: list all commands and options.
-
-## Customization
-
-- **`~/.config/ollama/ai_settings.conf`**: default model (`AI_OLLAMA_MODEL`), API URL (`AI_OLLAMA_API_URL`), max context tokens (`AI_MAX_CONTEXT_TOKENS`).
-- **`~/.config/ollama/ai_persistent_notes.txt`**: shared note store the model can read across sessions.
-- **`~/.config/ollama/ai_system_prompt.txt`**: system prompt and default behavior.
+The test harness uses a temporary home directory and a mocked `curl`, so it does not touch your real Ollama config or live chat history.
 
 ## Uninstall
 
-1. Remove files from `~/.config/ollama/`, `~/.config/zsh/ollama_ai.zsh`, and `~/.cache/ollama_ai_context.json`.
-2. Remove the source line from `~/.zshrc`.
+Remove the source block from `~/.zshrc`, then remove the installed files you no longer want:
 
-## Developer
-By [Soroush Yousefpour](https://gabrimatic.info "Soroush Yousefpour")
+```bash
+trash ~/.config/zsh/ollama_ai.zsh
+trash ~/.config/ollama/ai_settings.conf
+trash ~/.config/ollama/ai_system_prompt.txt
+trash ~/.config/ollama/ai_persistent_notes.txt
+trash ~/.cache/ollama_ai_context.json
+```
 
-&copy; All rights reserved.
+Use `rm` instead of `trash` if your system does not have `trash` installed.
 
-## Donate
-<a href="https://www.buymeacoffee.com/gabrimatic" target="_blank"><img src="https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png" alt="Buy Me A Book" style="height: 41px !important;width: 174px !important;box-shadow: 0px 3px 2px 0px rgba(190, 190, 190, 0.5) !important;-webkit-box-shadow: 0px 3px 2px 0px rgba(190, 190, 190, 0.5) !important;" ></a>
+## Author
+
+Built and maintained by [Soroush Yousefpour](https://gabrimatic.info).
+
+## License
+
+MIT. See [LICENSE](LICENSE).

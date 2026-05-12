@@ -1,17 +1,7 @@
-# Personal Details (Customize these!)
-Name: [Your Name]
-Birthday: [Your Birthday]
-Location: [Your Location]
-Profession: [Your Profession]
+# Persistent notes for local Ollama chats
 
-# Technical Background (Optional, customize as needed)
-Languages: [Your Programming Languages]
-Framework: [Your Frameworks]
+# Add stable preferences or context you want the local model to remember.
+# Keep secrets, tokens, passwords, and private one-off details out of this file.
 
-# Current Devices (Optional, customize as needed)
-Computer: [Your Computer Model]
-Phone: [Your Phone Model]
-
-# Other notes for the AI (e.g., preferences, common tasks):
-# Example: Always respond in Markdown format.
-# Example: My primary coding language is Python. 
+# Example:
+# I prefer short answers unless I ask for detail.
