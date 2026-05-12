@@ -4,12 +4,11 @@
 
 ## Near Term
 
-- Add optional import/export commands for saved context.
-- Add a `--no-context` request mode for one-off prompts that should not read or save history.
 - Add an opt-in transcript log with clear privacy defaults.
+- Add zsh completions for the management commands and high-use flags.
+- Add a small release script that packages the installer and verifies a clean temporary install.
 
 ## Later
 
-- Add completions for zsh.
-- Add a small release script that packages the installer and verifies a clean temporary install.
 - Consider a Homebrew tap once the CLI is stable enough for repeated installs.
+- Add optional named profiles for separate model/system/context combinations.

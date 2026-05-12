@@ -2,7 +2,7 @@
 set -euo pipefail
 
 PROJECT_NAME="personal_ollama_cli"
-SCRIPT_VERSION="2.0.0"
+SCRIPT_VERSION="2.1.0"
 
 YES=false
 FORCE=false
