@@ -136,7 +136,10 @@ assert_contains "$(cat "$legacy_home/url.txt")" "http://localhost:11434/api/chat
 rm -rf "$legacy_home"
 
 install_home="$(mktemp -d)"
-HOME="$install_home" "$ROOT_DIR/install.sh" --yes >/tmp/personal_ollama_cli_install.out
+HOME="$install_home" \
+XDG_CONFIG_HOME="$install_home/.config" \
+XDG_CACHE_HOME="$install_home/.cache" \
+"$ROOT_DIR/install.sh" --yes >/tmp/personal_ollama_cli_install.out
 [[ -f "$install_home/.config/zsh/ollama_ai.zsh" ]] || fail "installer did not install zsh file"
 grep -Fq "_ollama_ai_config_file=\"$install_home/.config/zsh/ollama_ai.zsh\"" "$install_home/.zshrc" || fail "installer wrote the wrong zshrc source block"
 
